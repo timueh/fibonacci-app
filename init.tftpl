@@ -1,0 +1,6 @@
+#!/bin/bash
+# copy the binary from the s3 bucket to the ec2
+aws s3 cp s3://${bucket}/${key} /usr/bin/${key}
+chmod +x /usr/bin/${key}
+echo "starting up gin"
+GIN_MODE=${release_mode} PORT=${port} ${key}

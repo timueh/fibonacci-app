@@ -13,10 +13,6 @@ provider "aws" {
   region = var.region
 }
 
-locals {
-  app = "fibonacci_app"
-}
-
 data "aws_ami" "amazon-2" {
   most_recent = true
 
@@ -48,20 +44,25 @@ resource "aws_instance" "api" {
     type        = "ssh"
     host        = self.public_ip
     user        = "ec2-user"
-    private_key = file("/Users/tillmann/.ssh/aws_ec2_fib_key")
+    private_key = file(var.aws_key_pair.path_to_private_key)
     timeout     = "10m"
   }
 
   iam_instance_profile = aws_iam_instance_profile.app.name
 
-  user_data                   = file("init.sh")
+  user_data = templatefile("init.tftpl", {
+    bucket       = aws_s3_bucket.fib.id
+    key          = aws_s3_object.app.id
+    port         = var.port
+    release_mode = var.release_mode
+  })
   user_data_replace_on_change = true
 
   depends_on = [aws_s3_object.app]
 
   lifecycle {
     replace_triggered_by = [
-        aws_s3_object.app.source_hash
+      aws_s3_object.app.source_hash
     ]
   }
 }
@@ -116,8 +117,8 @@ data "aws_iam_policy_document" "allow_s3" {
 }
 
 resource "aws_key_pair" "webserver" {
-  key_name   = "aws_ec2_fib_key"
-  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKNaIOm0AxlEOZuzxt1PPAmJEXcjb5MiMvTsKrb9CJFx3BCGXwU8Dn4oo1Fybh5X9w8BhWm9b6vEE/96xM7PU5Ic7CA1khsHW3NrT9UrC4DuHj0CYxs/iM+B4mT3Uy873oWsAp/h3kDIIRxiL2Ld1kg7Z2uIBvySvXTYU2MhtruBNBJ6hf131ZHYI3W35Wwoxf/+vlLmWCVDgaI86ouGs+v9s6oBA0o8cAByHJ+NUZWJJaoURRRJ3QnQ6g0vS1gNZfBCWu2Dp7KRsrGCdIau6PaKWBTO2kJCCzaLp79I9iM356cPYUOu7Nyyi1kGQwsu9X80itPkWCcxjeRutLAnGd tillmann@MacBook-Pro"
+  key_name   = var.aws_key_pair.key_name
+  public_key = var.aws_key_pair.public_key
 }
 
 data "aws_vpc" "default" {
@@ -177,7 +178,7 @@ resource "aws_s3_bucket" "fib" {
 
 resource "aws_s3_object" "app" {
   bucket      = aws_s3_bucket.fib.id
-  key         = local.app
-  source      = local.app
-  source_hash = filemd5(local.app)
+  key         = var.app
+  source      = var.app
+  source_hash = filemd5(var.app)
 }
