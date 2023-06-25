@@ -1,4 +1,4 @@
-module github.com/timueh/fibonacci-api
+module github.com/timueh/fibonacci-app
 
 go 1.20
 
