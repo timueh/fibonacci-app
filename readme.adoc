@@ -93,23 +93,17 @@ Splendid.
 
 === Details
 
-As mentioned earlier the `n`-th Fibonacci number can be calculated by using Binet's formula.
+The actual business logic to compute the `n`-th Fibonacci number is realized as follows:
 
-The code snippet is as follows:
+> Use Binet's (simplified) formula and make it available via the https://pkg.go.dev/github.com/gin-gonic/gin#section-readme[Gin web framework].
 
-[source, go]
-----
-include::fibonacci.go[tag=fibonacci]
-----
+If the enviroment variable `GIN_MODE` is set to `release`, then the `logs` are written both to `os.Stdout` and a file on the EC2 instance, see the code for details.
 
-It may be counter-intuitive that the function returns a `float64` instead of an `uint64`, but this allows for a wider range.
+The `terraform` code then provisions an EC2 instance with a security group that allows for `ssh` and `http` on a (variable) port.
 
-In `main.go` we set up a slim API by using the https://pkg.go.dev/github.com/gin-gonic/gin#section-readme[Gin web framework].
+When launched, the EC2 instance executes its `user_data`, which is passed in form of the `init.tftpl`.
+The script first copies the binary from an accompanied S3 bucket (to which `terraform` pushes the binary beforehand).
+Then, the script launches the binary at a given `PORT` and in a given `GIN_MODE`.
 
-If the enviroment variable `GIN_MODE` is set to `release`, then the `logs` are written both to `os.Stdout` and a file on the EC2 instance.
 
-[source, go]
-----
-include::main.go[tag=release]
-----
 

@@ -25,8 +25,7 @@ data "aws_ami" "amazon-2" {
 
 
 resource "aws_instance" "api" {
-  instance_type = "t2.nano"
-  #   ami                         = "ami-022e1a32d3f742bd8"
+  instance_type               = "t2.nano"
   ami                         = data.aws_ami.amazon-2.id
   vpc_security_group_ids      = [aws_security_group.web_server_sg_tf.id]
   associate_public_ip_address = true
@@ -44,7 +43,7 @@ resource "aws_instance" "api" {
   connection {
     type        = "ssh"
     host        = self.public_ip
-    user        = "ec2-user"
+    user        = var.ec2_user
     private_key = file(var.aws_key_pair.path_to_private_key)
     timeout     = "10m"
   }
