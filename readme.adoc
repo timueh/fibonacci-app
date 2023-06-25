@@ -1,0 +1,85 @@
+== Host your own Fibonacci number app using AWS EC2 and Golang
+
+The https://en.wikipedia.org/wiki/Fibonacci_sequence[Fibonacci sequence] is an intriguing sequence: sum up the previous two Fibonacci numbers and what you get is an approximation of the golden spiral.
+Also, the quotient of two adjacent Fibonacci numbers converges to the golden ratio.
+
+Here are the first few
+
+> 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144.
+
+Sweet, huh?
+
+More often than not, the Fibonacci numbers are computed recursively.
+
+What is lesser known -- there is an explicit formula to compute the `n`-th Fibonacci sequence; it is called https://en.wikipedia.org/wiki/Fibonacci_sequence#Binet's_formula[Binet's formula].
+
+Wouldn't it be cool to have an API that returns the `n`-th Fibonacci number, and host it in terms of an AWS EC2 instance?
+
+[source, bash]
+----
+curl http://ec2-54-164-51-34.compute-1.amazonaws.com:8000/fibonacci/10
+{
+    "message": "Fibonacci number #10 is 55."
+}
+----
+
+This is what this code allows you to do.
+
+=== Requirements
+
+You need the following:
+
+* AWS account for cloud resources,
+* `terraform` for provisioning,
+* `golang` for building the AWS Lambda function
+* `make` for building
+
+=== Provisioning
+
+This section shows you how to provision the resources.
+
+Start off by creating a key pair.
+This is required to `ssh` onto your AWS EC2 instance (in case you want to debug or just check it out).
+
+Go ahead and run
+
+[source, bash]
+----
+ssh-keygen -t rsa -b 2048
+<followTheInstructions>
+----
+
+Having created the key pair, then create a file called `vals.tfvars` at the root of the code with the following information about your newly created key pair:
+
+[source, terraform]
+----
+aws_key_pair = {
+  key_name            = <yourKeyName>
+  public_key          = <publicKey>
+  path_to_private_key = <pathToYourPrivateKey>
+}
+----
+
+Next, we build the binary by running
+
+[source, bash]
+----
+make test
+make build
+----
+
+Now it's time to deploy the resources using `terraform`
+
+[source, bash]
+----
+make apply
+...
+Outputs:
+
+address = "curl http://ec2-54-164-51-34.compute-1.amazonaws.com:8000/fibonacci/:n (replace :n by a number)"
+----
+
+Note the `terraform` output.
+You can directly copy and paste it to your terminal, and send an actual request.
+
+Splendid.
