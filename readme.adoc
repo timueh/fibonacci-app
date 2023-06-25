@@ -90,3 +90,26 @@ Note the `terraform` output.
 You can directly copy and paste it to your terminal, and send an actual request.
 
 Splendid.
+
+=== Details
+
+As mentioned earlier the `n`-th Fibonacci number can be calculated by using Binet's formula.
+
+The code snippet is as follows:
+
+[source, go]
+----
+include::fibonacci.go[tag=fibonacci]
+----
+
+It may be counter-intuitive that the function returns a `float64` instead of an `uint64`, but this allows for a wider range.
+
+In `main.go` we set up a slim API by using the https://pkg.go.dev/github.com/gin-gonic/gin#section-readme[Gin web framework].
+
+If the enviroment variable `GIN_MODE` is set to `release`, then the `logs` are written both to `os.Stdout` and a file on the EC2 instance.
+
+[source, go]
+----
+include::main.go[tag=release]
+----
+

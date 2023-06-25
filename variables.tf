@@ -33,3 +33,9 @@ variable "aws_key_pair" {
   })
   description = "key used to connect to ec2; you must possess the matching private key"
 }
+
+variable "ec2_user" {
+  type        = string
+  default     = "ec2-user"
+  description = "default ec2 user"
+}

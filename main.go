@@ -28,6 +28,7 @@ func fibonacciHandler(c *gin.Context) {
 }
 
 func main() {
+	// tag::release[]
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)
 		f, err := os.Create("/var/log/gin.log")
@@ -37,6 +38,7 @@ func main() {
 		gin.DisableConsoleColor()
 		gin.DefaultWriter = io.MultiWriter(f, os.Stdout)
 	}
+	// end::release[]
 
 	router := gin.Default()
 	router.GET("/fibonacci/:n", fibonacciHandler)

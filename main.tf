@@ -18,15 +18,16 @@ data "aws_ami" "amazon-2" {
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+    values = ["al2023-ami-2023.*-kernel-*-x86_64"]
   }
   owners = ["amazon"]
 }
 
 
 resource "aws_instance" "api" {
-  instance_type               = "t2.micro"
-  ami                         = "ami-022e1a32d3f742bd8"
+  instance_type = "t2.nano"
+  #   ami                         = "ami-022e1a32d3f742bd8"
+  ami                         = data.aws_ami.amazon-2.id
   vpc_security_group_ids      = [aws_security_group.web_server_sg_tf.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.webserver.key_name
@@ -37,7 +38,7 @@ resource "aws_instance" "api" {
   }
 
   tags = {
-    Name = "FibonacciAPI"
+    Name = "${random_pet.name.id}"
   }
 
   connection {
@@ -68,7 +69,7 @@ resource "aws_instance" "api" {
 }
 
 resource "aws_iam_instance_profile" "app" {
-  name = "FibAppProfile"
+  name = "AppProfile"
   role = aws_iam_role.app_role.name
 }
 
@@ -86,7 +87,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "app_role" {
-  name               = "FibAppRole"
+  name               = "AppRole"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
@@ -126,26 +127,26 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_security_group" "web_server_sg_tf" {
-  name        = "web-server-sg-https-tf"
-  description = "Allow HTTPS to web server"
+  name        = "${random_pet.name.id}-sg"
+  description = "SG for Fibonacci app"
   vpc_id      = data.aws_vpc.default.id
 }
 
-resource "aws_security_group_rule" "allow_https" {
-  type              = "ingress"
-  description       = "HTTPS ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.web_server_sg_tf.id
-}
+# resource "aws_security_group_rule" "allow_https" {
+#   type              = "ingress"
+#   description       = "HTTPS ingress"
+#   from_port         = 443
+#   to_port           = 443
+#   protocol          = "tcp"
+#   cidr_blocks       = ["0.0.0.0/0"]
+#   security_group_id = aws_security_group.web_server_sg_tf.id
+# }
 
 resource "aws_security_group_rule" "allow_http" {
   type              = "ingress"
   description       = "HTTP ingress"
-  from_port         = 8000
-  to_port           = 8000
+  from_port         = var.port
+  to_port           = var.port
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.web_server_sg_tf.id
@@ -172,7 +173,7 @@ resource "aws_security_group_rule" "outbound" {
 }
 
 resource "aws_s3_bucket" "fib" {
-  bucket        = "tf-fibonacci-app-2809"
+  bucket        = "${random_pet.name.id}-bucket"
   force_destroy = true
 }
 
@@ -181,4 +182,9 @@ resource "aws_s3_object" "app" {
   key         = var.app
   source      = var.app
   source_hash = filemd5(var.app)
+}
+
+resource "random_pet" "name" {
+  prefix = "tf-fibonacci-app"
+  length = 1
 }
