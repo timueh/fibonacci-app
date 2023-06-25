@@ -12,23 +12,18 @@ import (
 
 func fibonacciHandler(c *gin.Context) {
 	nValue := c.Param("n")
-	n, err := strconv.Atoi(nValue)
+	n, err := strconv.ParseUint(nValue, 10, 64)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
-			"message": fmt.Sprintf("could not convert n to int (n is %v, err is %s)", nValue, err.Error()),
+		c.IndentedJSON(http.StatusConflict, gin.H{
+			"message": fmt.Sprintf("seems like the value %q you provided for n is invalid; only non-negative numbers are allowed. Error is %s", nValue, err.Error()),
 		})
 		return
 	}
-	f, err := fibonacci(n)
-	if err != nil {
-		c.IndentedJSON(http.StatusNotAcceptable, gin.H{
-			"message": err.Error(),
-		})
-		return
-	}
-	msg := fmt.Sprintf("The %v-th Fibonacci number is %v.", n, f)
+
+	f := fibonacci(n)
+
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": msg,
+		"message": fmt.Sprintf("Fibonacci number #%v is %v.", n, f),
 	})
 }
 

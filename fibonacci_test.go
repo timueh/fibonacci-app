@@ -5,12 +5,8 @@ import (
 )
 
 func TestFibonacci(t *testing.T) {
-	n, want := 10, 55
-	got, err := fibonacci(n)
-
-	if err != nil {
-		t.Fatal("expected no error, got", err)
-	}
+	n, want := uint64(10), 55.
+	got := fibonacci(n)
 
 	if want != got {
 		t.Fatalf("got %v, want %v", got, want)
@@ -18,11 +14,8 @@ func TestFibonacci(t *testing.T) {
 }
 
 func TestFibonacciForNonPositiveN(t *testing.T) {
-	n, want := 0, 0
-	got, err := fibonacci(n)
-	if err == nil {
-		t.Fatal("expected error, got nil")
-	}
+	n, want := uint64(0), 0.
+	got := fibonacci(n)
 	if want != got {
 		t.Fatalf("got %v, want %v", got, want)
 	}
