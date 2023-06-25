@@ -25,6 +25,13 @@ curl http://ec2-54-164-51-34.compute-1.amazonaws.com:8000/fibonacci/10
 
 This is what this code allows you to do.
 
+[IMPORTANT]
+.Best effort
+====
+The code is provided as a best-effort solution.
+The author does not cover any AWS charges that may apply nor is the author liable for missing security features.
+====
+
 === Requirements
 
 You need the following:
